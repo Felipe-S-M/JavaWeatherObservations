@@ -40,19 +40,21 @@ public class GenerateFilteredFileService {
         for (String line : getFileData()) {
             clearStringBuilder(content);
             String[] fileContent = line.split("\\|");
-            buildConvertedFileContent(fileContent, request, lastKnownPoint);
+            buildConvertedFileContent(fileContent, request, lastKnownPoint, content, file);
         }
     }
 
-    private void clearStringBuilder(Stringbuilder content) {
+    private void clearStringBuilder(StringBuilder content) {
         content.setLength(0);
     }
 
-    private String buildConvertedFileContent(
+    private void buildConvertedFileContent(
             String[] fileContent,
             GenerateFilteredFileRequest request,
-            StringBuilder lastKnownPoint
-    ) {
+            StringBuilder lastKnownPoint,
+            StringBuilder content,
+            File file
+    ) throws IOException {
         if (!fileContent[0].equals("id")) {
             Double distanciaFromLastPoin = calculateDistanceFromLastPoint(lastKnownPoint, fileContent[2]);
             clearStringBuilder(lastKnownPoint);
@@ -60,7 +62,7 @@ public class GenerateFilteredFileService {
             content.append(buildContentLine(fileContent, request, distanciaFromLastPoin));
             FileUtilsService.writeInFile(file, content.toString());
         }
-        return line.append("\n").toString();
+        content.append("\n");
     }
 
     private String buildContentLine(
@@ -75,6 +77,7 @@ public class GenerateFilteredFileService {
         line.append(formatNumber(getTemperature(temperature, request.getTemperatureScale(), observatory))).append("|");
         line.append(observatory).append("|");
         line.append(formatNumber(convertDistanceFromLastPoint(distanciaFromLastPoin, request.getDistanceScale())));
+        return line.toString();
     }
  
     private String formatNumber(Double number) {
@@ -85,7 +88,7 @@ public class GenerateFilteredFileService {
     private Double calculateDistanceFromLastPoint(StringBuilder lastKnownLocation, String currentLocation) {
         if (!lastKnownLocation.toString().isEmpty())
             return 0.0;
-        String[] lastPoints = lastKnownLocation.split(",");
+        String[] lastPoints = lastKnownLocation.toString().split(",");
         Double x1 = new Double(lastPoints[0]);
         Double x2 = new Double(lastPoints[1]);
 

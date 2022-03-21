@@ -22,13 +22,13 @@ public class generateFlightStatisticsService {
         }
         Map<String, Double> resultsTemperature = new HashMap<>();
         Map<String, Integer> observationsEachObservatory = new HashMap<>();
-        AtomicDouble totalDistance = 0.0;
+        AtomicDouble totalDistance = new AtomicDouble(0.0);
         StringBuilder latPoints = new StringBuilder();
 
         List<String> fileLines = getFileData();
         for (String line: fileLines) {
             String[] content = line.split("\\|");
-            buildObservationData(content);
+            buildObservationData(content, observationsEachObservatory, latPoints, totalDistance, resultsTemperature);
         }
 
         return FlightStatisticsMapper.buildFlightStatistics(
@@ -39,15 +39,21 @@ public class generateFlightStatisticsService {
                 observationsEachObservatory);
     }
 
-    private void buildObservationData(String[] content) {
+    private void buildObservationData(
+            String[] content,
+            Map<String, Integer> observationsEachObservatory,
+            StringBuilder lastPoints,
+            AtomicDouble totalDistance,
+            Map<String, Double> resultsTemperature
+    ) {
         if (!content[0].equals("id")) {
             observationsEachObservatory.put(content[4], observationsEachObservatory.get(content[4]) + 1);
-            calculateTotalDistance(latPoints, content[2], totalDistance);
-            setTemperatureData(content);
+            calculateTotalDistance(lastPoints, content[2], totalDistance);
+            setTemperatureData(content, resultsTemperature);
         }
     }
 
-    private void setTemperatureData(String[] content) {
+    private void setTemperatureData(String[] content, Map<String, Double> resultsTemperature) {
         Double temperature = getConvertedTemperature(new Double(content[3]), content[4]);
         if (resultsTemperature.get("minTemperature") == null ||
                 temperature < resultsTemperature.get("minTemperature")) {
@@ -75,19 +81,19 @@ public class generateFlightStatisticsService {
 
     private void calculateTotalDistance(StringBuilder lastPoints, String currentPoints, AtomicDouble totalDistance) {
         setLastPoints(lastPoints, currentPoints);
-        String[] lastPointsSplited = lastPoints.split(",");
+        String[] lastPointsSplited = lastPoints.toString().split(",");
         Double x1 = new Double(lastPointsSplited[0]);
         Double x2 = new Double(lastPointsSplited[1]);
 
         String[] currentPointsSplited = currentPoints.split(",");
         Double y1 = new Double(currentPointsSplited[0]);
         Double y2 = new Double(currentPointsSplited[1]);
-        return totalDistance + Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+        totalDistance.addAndGet(Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
     }
 
     private void setLastPoints(StringBuilder lastPoints, String currentPoints) {
         clearStringBuilder(lastPoints);
-        lastPoints.append(currentPoints)
+        lastPoints.append(currentPoints);
     }
 
     private void clearStringBuilder(StringBuilder stringBUilder) {

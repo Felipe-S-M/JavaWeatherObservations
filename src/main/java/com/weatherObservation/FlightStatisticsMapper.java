@@ -1,5 +1,6 @@
 package com.weatherObservation;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import com.weatherObservation.dto.response.GenerateFlightStatisticsResponse;
 import com.weatherObservation.dto.response.ObservationsResponse;
 
@@ -12,7 +13,7 @@ public class FlightStatisticsMapper {
             Double minTemperature,
             Double maxTemperature,
             Double meanTemperature,
-            Double totalDistance,
+            AtomicDouble totalDistance,
             Map<String, Integer> observationsEachObservatory
     ) {
         NumberFormat formatter = new DecimalFormat("#0.00");
