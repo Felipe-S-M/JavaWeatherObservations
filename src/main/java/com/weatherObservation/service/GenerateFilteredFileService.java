@@ -33,30 +33,38 @@ public class GenerateFilteredFileService {
 
     private void buildFile(File file, GenerateFilteredFileRequest request) throws IOException {
         StringBuilder content = new StringBuilder();
-        String lastKnownLocation = "";
+        StringBuilder lastKnownPoint = new StringBuilder();
         buildFileHeader(content);
         FileUtilsService.writeInFile(file, content.toString());
 
         for (String line : getFileData()) {
-            content.setLength(0);
-            Double distanciaFromLastPoin = 0.0;
+            clearStringBuilder(content);
             String[] fileContent = line.split("\\|");
-
-            if (!fileContent[0].equals("id")) {
-                if (!lastKnownLocation.isEmpty())
-                    distanciaFromLastPoin = calculateDistanceFromLastPoint(lastKnownLocation, fileContent[2]);
-
-                lastKnownLocation = fileContent[2];
-                content.append(buildConvertedFileContent(fileContent, request, distanciaFromLastPoin));
-                FileUtilsService.writeInFile(file, content.toString());
-            }
-
+            buildConvertedFileContent(fileContent, request, lastKnownPoint);
         }
     }
 
-    private String buildConvertedFileContent(
-            String[] fileContent, GenerateFilteredFileRequest request, Double distanciaFromLastPoin) {
+    private void clearStringBuilder(Stringbuilder content) {
+        content.setLength(0);
+    }
 
+    private String buildConvertedFileContent(
+            String[] fileContent,
+            GenerateFilteredFileRequest request,
+            StringBuilder lastKnownPoint
+    ) {
+        if (!fileContent[0].equals("id")) {
+            Double distanciaFromLastPoin = calculateDistanceFromLastPoint(lastKnownPoint, fileContent[2]);
+            clearStringBuilder(lastKnownPoint);
+            lastKnownPoint.append(fileContent[2]);
+            content.append(buildContentLine(fileContent, request, distanciaFromLastPoin));
+            FileUtilsService.writeInFile(file, content.toString());
+        }
+        return line.append("\n").toString();
+    }
+
+    private String buildContentLine(
+            String[] fileContent, GenerateFilteredFileRequest request, Double distanciaFromLastPoin) {
         StringBuilder line = new StringBuilder();
         Double temperature = new Double(fileContent[3]);
         String observatory = fileContent[4];
@@ -67,15 +75,16 @@ public class GenerateFilteredFileService {
         line.append(formatNumber(getTemperature(temperature, request.getTemperatureScale(), observatory))).append("|");
         line.append(observatory).append("|");
         line.append(formatNumber(convertDistanceFromLastPoint(distanciaFromLastPoin, request.getDistanceScale())));
-        return line.append("\n").toString();
     }
-
+ 
     private String formatNumber(Double number) {
         NumberFormat formatter = new DecimalFormat("#0.00");
         return formatter.format(number);
     }
 
-    private Double calculateDistanceFromLastPoint(String lastKnownLocation, String currentLocation) {
+    private Double calculateDistanceFromLastPoint(StringBuilder lastKnownLocation, String currentLocation) {
+        if (!lastKnownLocation.toString().isEmpty())
+            return 0.0;
         String[] lastPoints = lastKnownLocation.split(",");
         Double x1 = new Double(lastPoints[0]);
         Double x2 = new Double(lastPoints[1]);
@@ -147,7 +156,7 @@ public class GenerateFilteredFileService {
 
     private List<String> getFileData() throws IOException {
         File dataFile = new File("classpath:flyingData.txt");
-         return Files.lines(dataFile.toPath()).collect(Collectors.toList());
+        return Files.lines(dataFile.toPath()).collect(Collectors.toList());
     }
 
 }
