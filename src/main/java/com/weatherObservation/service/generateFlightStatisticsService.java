@@ -3,6 +3,7 @@ package com.weatherObservation.service;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.weatherObservation.FlightStatisticsMapper;
 import com.weatherObservation.dto.response.GenerateFlightStatisticsResponse;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -13,11 +14,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@AllArgsConstructor
 @Service
 public class generateFlightStatisticsService {
 
+    private FileUtilsService fileUtilsService;
+
     public GenerateFlightStatisticsResponse generateFlightStatistics() throws Exception {
-        if(!FileUtilsService.checkIfExistFile("flyingData")){
+        if(!fileUtilsService.checkIfExistFile("flyingData")){
             throw new Exception("Data file not found!");
         }
         Map<String, Double> resultsTemperature = new HashMap<>();
@@ -34,7 +38,7 @@ public class generateFlightStatisticsService {
         return FlightStatisticsMapper.buildFlightStatistics(
                 resultsTemperature.get("minTemperature"),
                 resultsTemperature.get("maxTemperature"),
-                resultsTemperature.get("meanTemperature") / fileLines.size() - 1,
+                resultsTemperature.get("totalTemperature") / fileLines.size() - 1,
                 totalDistance,
                 observationsEachObservatory);
     }
@@ -47,7 +51,10 @@ public class generateFlightStatisticsService {
             Map<String, Double> resultsTemperature
     ) {
         if (!content[0].equals("id")) {
-            observationsEachObservatory.put(content[4], observationsEachObservatory.get(content[4]) + 1);
+            Integer observations = observationsEachObservatory.get(content[4]) == null ?
+                    0 :
+                    observationsEachObservatory.get(content[4]) + 1;
+            observationsEachObservatory.put(content[4], observations);
             calculateTotalDistance(lastPoints, content[2], totalDistance);
             setTemperatureData(content, resultsTemperature);
         }
@@ -101,7 +108,7 @@ public class generateFlightStatisticsService {
     }
 
     private List<String> getFileData() throws IOException {
-        File dataFile = new File("classpath:flyingData.txt");
+        File dataFile = new File(fileUtilsService.getDefaultFolderPath() + "/flyingData.txt");
         return Files.lines(dataFile.toPath()).collect(Collectors.toList());
     }
 

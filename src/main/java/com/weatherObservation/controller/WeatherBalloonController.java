@@ -24,22 +24,22 @@ public class WeatherBalloonController {
     private GenerateFilteredFileService generateFilteredFileService;
     private com.weatherObservation.service.generateFlightStatisticsService generateFlightStatisticsService;
 
-    @PostMapping("/generateData")
+    @PostMapping("/generateFile")
     public ResponseEntity<?> generateFile() throws IOException, ParseException {
         generateDataFileService.generateFile();
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @PostMapping("/convertData")
-    public ResponseEntity<?> generateOutputFilteredFile(
+    public ResponseEntity<?> convertData(
             @RequestBody GenerateFilteredFileRequest request) throws Exception {
         generateFilteredFileService.generateFilteredFile(request);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @GetMapping("/flightStatistics")
-    public GenerateFlightStatisticsResponse generateFlightStatistics() throws Exception {
-        return generateFlightStatisticsService.generateFlightStatistics();
+    public ResponseEntity<GenerateFlightStatisticsResponse> flightStatistics() throws Exception {
+        return ResponseEntity.ok(generateFlightStatisticsService.generateFlightStatistics());
     }
 
 }

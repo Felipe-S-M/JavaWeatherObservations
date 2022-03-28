@@ -1,6 +1,10 @@
 package com.weatherObservation.service;
 
+import com.weatherObservation.WeatherObservationApplication;
+import lombok.AllArgsConstructor;
 import lombok.var;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
@@ -9,24 +13,30 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 
+@AllArgsConstructor
 @Service
 public class FileUtilsService {
-    public static boolean checkIfExistFile(String fileName) throws FileNotFoundException {
-        var file = ResourceUtils.getFile("classpath:" + fileName);
-        return file != null;
+
+    private ResourceLoader resourceLoader;
+
+    public String getDefaultFolderPath() throws IOException {
+        return new ClassPathResource(".").getFile().getPath();
     }
 
-    public static void deleteExitingFile(String fileName) throws FileNotFoundException {
+    public boolean checkIfExistFile(String fileName){
+        try {
+            ResourceUtils.getFile(getDefaultFolderPath() + fileName);
+        } catch (Exception exception) {
+            return false;
+        }
+        return true;
+    }
+
+    public void deleteExitingFile(String fileName) throws FileNotFoundException {
         File file;
-        if (FileUtilsService.checkIfExistFile(fileName)) {
-            file = ResourceUtils.getFile("classpath:" + fileName);
+        if (checkIfExistFile(fileName)) {
+            file = ResourceUtils.getFile(fileName);
             file.delete();
         }
-    }
-
-    public static void writeInFile(File file, String content) throws IOException {
-        FileWriter fw = new FileWriter(file);
-        fw.write(content);
-        fw.close();
     }
 }

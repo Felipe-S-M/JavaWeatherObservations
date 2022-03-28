@@ -3,9 +3,11 @@ package com.weatherObservation.service;
 import com.weatherObservation.dto.request.GenerateFilteredFileRequest;
 import com.weatherObservation.entity.Distance;
 import com.weatherObservation.entity.Temperature;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.text.DecimalFormat;
@@ -13,15 +15,18 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@AllArgsConstructor
 @Service
 public class GenerateFilteredFileService {
 
+    private FileUtilsService fileUtilsService;
+
     public void generateFilteredFile(GenerateFilteredFileRequest request) throws Exception{
-        if(!FileUtilsService.checkIfExistFile("flyingData")){
+        if(!fileUtilsService.checkIfExistFile("flyingData.txt")){
             throw new Exception("Data file not found!");
         }
-        FileUtilsService.deleteExitingFile("flyingDataFiltered");
-        File file = new File("classpath:/flyingDataFiltered.txt");
+        fileUtilsService.deleteExitingFile("flyingDataFiltered.txt");
+        File file = new File("flyingDataFiltered.txt");
         file.createNewFile();
         buildFile(file, request);
 
@@ -35,13 +40,15 @@ public class GenerateFilteredFileService {
         StringBuilder content = new StringBuilder();
         StringBuilder lastKnownPoint = new StringBuilder();
         buildFileHeader(content);
-        FileUtilsService.writeInFile(file, content.toString());
+        FileWriter fw = new FileWriter(file);
+        fw.write(content.toString());
 
         for (String line : getFileData()) {
             clearStringBuilder(content);
             String[] fileContent = line.split("\\|");
-            buildConvertedFileContent(fileContent, request, lastKnownPoint, content, file);
+            buildConvertedFileContent(fileContent, request, lastKnownPoint, content, fw);
         }
+        fw.close();
     }
 
     private void clearStringBuilder(StringBuilder content) {
@@ -53,16 +60,15 @@ public class GenerateFilteredFileService {
             GenerateFilteredFileRequest request,
             StringBuilder lastKnownPoint,
             StringBuilder content,
-            File file
+            FileWriter fileWriter
     ) throws IOException {
         if (!fileContent[0].equals("id")) {
             Double distanciaFromLastPoin = calculateDistanceFromLastPoint(lastKnownPoint, fileContent[2]);
             clearStringBuilder(lastKnownPoint);
             lastKnownPoint.append(fileContent[2]);
             content.append(buildContentLine(fileContent, request, distanciaFromLastPoin));
-            FileUtilsService.writeInFile(file, content.toString());
+            fileWriter.write(content + "\n");
         }
-        content.append("\n");
     }
 
     private String buildContentLine(
@@ -86,18 +92,19 @@ public class GenerateFilteredFileService {
     }
 
     private Double calculateDistanceFromLastPoint(StringBuilder lastKnownLocation, String currentLocation) {
-        if (!lastKnownLocation.toString().isEmpty())
+        if (lastKnownLocation.toString().isEmpty())
             return 0.0;
-        String[] lastPoints = lastKnownLocation.toString().split(",");
-        Double x1 = new Double(lastPoints[0]);
-        Double x2 = new Double(lastPoints[1]);
+        String[] lastPoints = lastKnownLocation.toString().split("\\,");
+        Double x1 = Double.valueOf(lastPoints[0]);
+        Double x2 = Double.valueOf(lastPoints[1]);
 
         String[] currentPoints = currentLocation.split(",");
-        Double y1 = new Double(currentPoints[0]);
-        Double y2 = new Double(currentPoints[1]);
+        Double y1 = Double.valueOf(currentPoints[0]);
+        Double y2 = Double.valueOf(currentPoints[1]);
 
        return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
     }
+
 
     private Double getTemperature(Double temperature, Temperature scale, String observatory) {
         switch (scale) {
@@ -158,7 +165,7 @@ public class GenerateFilteredFileService {
     }
 
     private List<String> getFileData() throws IOException {
-        File dataFile = new File("classpath:flyingData.txt");
+        File dataFile = new File(fileUtilsService.getDefaultFolderPath() + "/flyingData.txt");
         return Files.lines(dataFile.toPath()).collect(Collectors.toList());
     }
 
