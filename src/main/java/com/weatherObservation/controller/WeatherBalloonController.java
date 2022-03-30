@@ -4,6 +4,7 @@ import com.weatherObservation.dto.request.GenerateFilteredFileRequest;
 import com.weatherObservation.dto.response.GenerateFlightStatisticsResponse;
 import com.weatherObservation.service.GenerateDataFileService;
 import com.weatherObservation.service.GenerateFilteredFileService;
+import com.weatherObservation.service.GenerateFlightStatisticsService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ import java.text.ParseException;
 public class WeatherBalloonController {
     private GenerateDataFileService generateDataFileService;
     private GenerateFilteredFileService generateFilteredFileService;
-    private com.weatherObservation.service.generateFlightStatisticsService generateFlightStatisticsService;
+    private GenerateFlightStatisticsService generateFlightStatisticsService;
 
     @PostMapping("/generateFile")
     public ResponseEntity<?> generateFile() throws IOException, ParseException {

@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
-public class generateFlightStatisticsService {
+public class GenerateFlightStatisticsService {
 
     private FileUtilsService fileUtilsService;
 
