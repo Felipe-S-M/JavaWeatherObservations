@@ -26,4 +26,20 @@ This repository was a test made for a company which the requisit were to simulat
 3. Run the command "mvn spring-boot:run" on this repository's folder in order to run the application.
 
 ### How to use
-
+#### Generate report file
+curl --request POST \
+  --url http://localhost:8080/weatherBalloon/generateFile
+#### Convert data
+ * you can convert the generated data to an desired scale
+ * Temperature scale values: CELSIUS, FAHRENHEIT, KELVIN
+ * Distance scale values: KM, MILES, METERS
+ curl --request POST \
+  --url http://localhost:8080/weatherBalloon/convertData \
+  --header 'Content-Type: application/json' \
+  --data '{
+      "distanceScale": "KM",
+      "temperatureScale": "CELSIUS"
+   }'
+#### Retrive flight statistics
+curl --request GET \
+  --url http://localhost:8080/weatherBalloon/flightStatistics
