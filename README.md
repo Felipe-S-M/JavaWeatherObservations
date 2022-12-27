@@ -2,7 +2,7 @@
 
 ## What is this repository
 
-This repository was a test made for a company which the requisit were to simulate how weather balloon reported data and to display them.
+This repository was a test made for a company which the requisit were to simulate weather balloon reported data and to display them.
 
 ## Features
 
