@@ -33,7 +33,7 @@ public class GenerateDataFileService {
         buildHeader(content);
         FileWriter fw = new FileWriter(file);
 
-        for (int i = 0; i < 50_000; i++) {
+        for (int i = 0; i < 1_000_000; i++) {
             content.append(buildObservationContent(i, temperature, location));
             fw.write(content.toString());
             content.setLength(0);
