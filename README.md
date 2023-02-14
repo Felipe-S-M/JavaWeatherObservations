@@ -26,10 +26,10 @@ This repository was a test made for a company which the requisit were to simulat
 3. Run the command "mvn spring-boot:run" on this repository's folder in order to run the application.
 
 ### How to use
-#### Generate report file
+#### Create report file
 
 curl --request POST \
-  --url http://localhost:8080/weatherBalloon/generateFile
+  --url http://localhost:8080/weatherBalloon/createReportFile
   
 #### Convert data
 
