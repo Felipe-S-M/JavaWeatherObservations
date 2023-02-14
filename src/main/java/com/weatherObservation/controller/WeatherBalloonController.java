@@ -25,7 +25,7 @@ public class WeatherBalloonController {
     private GenerateFilteredFileService generateFilteredFileService;
     private GenerateFlightStatisticsService generateFlightStatisticsService;
 
-    @PostMapping("/generateFile")
+    @PostMapping("/createReportFile")
     public ResponseEntity<?> generateFile() throws IOException, ParseException {
         generateDataFileService.generateFile();
         return ResponseEntity.ok(HttpStatus.OK);
